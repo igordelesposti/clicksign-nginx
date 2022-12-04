@@ -7,6 +7,7 @@ resource "aws_instance" "nginx-web" {
   )
   instance_type = "t2.micro"
   ami           = "ami-052efd3df9dad4825"
+  key_name      = var.key_name
   user_data     = file("userdata.tpl")
   vpc_security_group_ids = [
     aws_security_group.nginx-web_sg.id
@@ -26,12 +27,19 @@ resource "aws_security_group" "nginx-web_sg" {
     }
   )
   name        = "nginx-web_sg"
-  description = "allow http on port 80"
+  description = "allow ssh on port 22 and http on port 80"
   vpc_id      = module.vpc.default_vpc_id
   depends_on = [
     module.vpc,
   ]
-
+  // ssh access
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  // http access
   ingress {
     from_port   = 80
     to_port     = 80
